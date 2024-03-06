@@ -1,8 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useQuery, gql } from "@apollo/client";
 import Navbar from "../../components/navbar/Navbar";
 import Card from "../../components/card/Card";
-import { Details } from "./Details";
+
+const GET_ALL_BLOG_POSTS = gql`
+  query {
+    getAllBlogPost {
+      id
+      title
+      body
+      image
+      author
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 const Home = () => {
   const styles = StyleSheet.create({
@@ -11,14 +25,32 @@ const Home = () => {
       paddingBottom: 69,
     },
   });
+
+  const { loading, error, data } = useQuery(GET_ALL_BLOG_POSTS);
+
+  const [blogPosts, setBlogPosts] = useState([]);
+
+  useState(() => {
+    if (!loading && data) {
+    //   setBlogPosts(data.getAllBlogPost);
+    console.log(data.getAllBlogPost);
+    }
+  }, [loading, data]);
+
   return (
     <>
       <Navbar />
-      <View className="flex justify-center items-center w-full h-full">
+      <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          {Details.map((item) => {
-            return <Card key={item.id} id={item.id} url={item.url} title={item.title} description={item.description} />;
-          })}
+          {blogPosts.map((post) => (
+            <Card
+              key={post.id}
+              id={post.id}
+              url={post.image}
+              title={post.title}
+              description={post.body}
+            />
+          ))}
         </ScrollView>
       </View>
     </>
