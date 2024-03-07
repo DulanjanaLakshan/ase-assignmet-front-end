@@ -1,4 +1,7 @@
+import { gql, useMutation } from "@apollo/client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
 import {
   Image,
   StatusBar,
@@ -17,8 +20,80 @@ import Animated, {
   FadeOut,
 } from "react-native-reanimated";
 
+const CREATE_SIGN_UP = gql`
+  mutation MUTATE_DATA(
+    $firstName: String!
+    $lastName: String!
+    $email: String!
+    $username: String!
+    $password: String!
+  ){
+    signUp(
+      createUserInput: {
+        firstName: $firstName
+        lastName: $lastName
+        email: $email
+        username: $username
+        password: $password
+      }
+    ) {
+      id
+      firstName
+      lastName
+      email
+      password
+      username
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 const SignUp = () => {
   const navigation = useNavigation();
+  const [firstname, setFirstName] = useState("");
+  const [lastename, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [
+    createSignUp,
+    {
+      loading: createSignUpLoading,
+      error: createSignUpError,
+      data: createSignUpData,
+    },
+  ] = useMutation(CREATE_SIGN_UP);
+  
+  const handlePostSubmit = async () => {
+    try {
+      const { data } = await createSignUp({
+        variables: {
+          firstName: firstname,
+          lastName: lastename,
+          email: email,
+          username: username,
+          password: password,
+        },
+      });
+      if (data !== null) {
+        await AsyncStorage.setItem('userData', JSON.stringify(data));
+        navigation.navigate("Home");
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setUsername("");
+        setPassword("");
+      }
+    } catch (error) {
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        const errors = error.graphQLErrors.map((error) => error.message);
+        console.error("GraphQL errors:", errors);
+      }
+    }
+  };
+  
   return (
     <KeyboardAvoidingView
       behavior="padding"
@@ -51,11 +126,15 @@ const SignUp = () => {
               <TextInput
                 className="text-white bg-black/50 p-5 rounded-2xl w-[49%] border border-gray-800"
                 placeholder="First Name"
+                value={firstname}
+                onChangeText={(text) => setFirstName(text)}
                 placeholderTextColor={"white"}
               />
               <TextInput
                 className="text-white bg-black/50 p-5 rounded-2xl w-[49%] border border-gray-800"
                 placeholder="Last Name"
+                value={lastename}
+                onChangeText={(text) => setLastName(text)}
                 placeholderTextColor={"white"}
               />
             </Animated.View>
@@ -66,6 +145,8 @@ const SignUp = () => {
               <TextInput
                 className="text-white bg-black/50 p-5 rounded-2xl w-full border border-gray-800"
                 placeholder="Email"
+                value={email}
+                onChangeText={(text) => setEmail(text)}
                 placeholderTextColor={"white"}
               />
             </Animated.View>
@@ -76,6 +157,8 @@ const SignUp = () => {
               <TextInput
                 className="text-white bg-black/50 p-5 rounded-2xl w-full border border-gray-800"
                 placeholder="Username"
+                value={username}
+                onChangeText={(text) => setUsername(text)}
                 placeholderTextColor={"white"}
               />
             </Animated.View>
@@ -86,6 +169,8 @@ const SignUp = () => {
               <TextInput
                 className="text-white bg-black/50 p-5 rounded-2xl w-full border border-gray-800"
                 placeholder="Password"
+                value={password}
+                onChangeText={(text) => setPassword(text)}
                 placeholderTextColor={"white"}
                 secureTextEntry
               />
@@ -94,7 +179,7 @@ const SignUp = () => {
               entering={FadeInDown.delay(400).duration(1000).springify()}
               className="w-full"
             >
-              <TouchableOpacity className="w-full bg-green-500 p-3 rounded-2xl mb-3">
+              <TouchableOpacity onPress={handlePostSubmit} className="w-full bg-green-500 p-3 rounded-2xl mb-3">
                 <Text className="text-xl font-bold text-white text-center">
                   SignUp
                 </Text>

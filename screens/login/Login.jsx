@@ -57,14 +57,14 @@ const Login = () => {
 
   const handleChange = async () => {
     try {
-      // const { data } = await createSingIn();
-      // if (data !== null) {
-      //   await AsyncStorage.setItem('userData', JSON.stringify(data));
+      const { data } = await createSingIn();
+      if (data !== null) {
+        await AsyncStorage.setItem('userData', JSON.stringify(data));
         
         navigation.navigate("Home");
         setEmail("");
         setPassword("");
-      // }
+      }
     } catch (error) {
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
         const errors = error.graphQLErrors.map((error) => error.message);

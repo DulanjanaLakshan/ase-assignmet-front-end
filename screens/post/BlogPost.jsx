@@ -72,6 +72,7 @@ const BlogPost = () => {
         if (userData !== null) {
           const userDataObject = JSON.parse(userData);
           setAuthor(userDataObject.signIn.id);
+          console.log(userDataObject.signIn.id);
         }
         navigation.navigate("Home");
       } catch (error) {
