@@ -7,15 +7,33 @@ import {
   Image,
   Modal,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 import Navbar from "../../components/navbar/Navbar";
 import BackButton from "../../components/back/BackButton";
 import { useNavigation } from "@react-navigation/native";
+import { gql, useMutation } from "@apollo/client";
+
+const CREATE_BLOG_POST = gql`
+  mutation CreateBlogPost($createBlogPostInput: BlogPostInput!) {
+    createBlogPost(createBlogPostInput: $createBlogPostInput) {
+      id
+      title
+      body
+      image
+      author
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 const BlogPost = () => {
   const navigation = useNavigation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
 
   const handleUploadPress = () => {
     setIsModalVisible(true);
@@ -40,101 +58,134 @@ const BlogPost = () => {
     }
   }, []);
 
+  const styles = StyleSheet.create({
+    scrollViewContainer: {
+      flexGrow: 1,
+      paddingBottom: 69,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "white",
+      padding: 20,
+    },
+    modalTitle: {
+      fontSize: 20,
+      marginBottom: 10,
+    },
+    closeButton: {
+      backgroundColor: "gray",
+      padding: 10,
+      borderRadius: 5,
+    },
+    closeButtonText: {
+      color: "white",
+      textAlign: "center",
+    },
+  });
+
+  const [createBlogPost, { loading, error }] = useMutation(CREATE_BLOG_POST);
+
+  const handlePostSubmit = async () => {
+    try {
+      const { data } = await createBlogPost({
+        variables: {
+          createBlogPostInput: {
+            title,
+            body,
+            image: imageUrl,
+            author: "assadsa",
+          },
+        },
+      });
+
+      console.log("Post created successfully:", data,"\n");
+      console.log("Post created successfully:", data.createBlogPost);
+    } catch (err) {
+      console.error("Error creating post:", err);
+    }
+  };
+
   return (
     <>
-      <Navbar />
-      <BackButton />
-      <View className="w-screen h-auto relative">
-        {imageUrl !== "" && (
-          <Image source={{ uri: imageUrl }} className="w-full h-96" />
-        )}
-        <TextInput
-          placeholder="Title..."
-          placeholderTextColor={"gray"}
-          style={{ fontSize: 46 }}
-          className="p-2 w-screen h-40 bg-gray-300"
-        />
-        <TextInput
-          className="p-2 w-full"
-          placeholder="Enter your blog description"
-          multiline={true}
-        />
-        <View className="absolute top-2 left-2 z-[999] flex gap-3 flex-row justify-center items-center">
-          <TouchableOpacity
-            id="uplode"
-            className="w-10 h-10 rounded-full flex justify-center items-center bg-black"
-            onPress={handleUploadPress}
-          >
-            <Image
-              className="w-7 h-7"
-              source={require("../../assets/icons/upload.png")}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity className="w-10 h-10 rounded-full flex justify-center items-center bg-black">
-            <Image
-              className="w-7 h-7"
-              source={require("../../assets/icons/send1.png")}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <Navbar />
+        <BackButton />
 
-      <Modal
-        animationType="slide"
-        visible={isModalVisible}
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Enter Image URL</Text>
+        <View className="w-screen h-auto relative">
+          {imageUrl !== "" && (
+            <Image source={{ uri: imageUrl }} className="w-full h-96" />
+          )}
           <TextInput
-            className="w-full h-14 border border-gray-400 m-2 p-2 rounded-2xl"
-            value={imageUrl}
-            onChangeText={handleInputChange}
-            placeholder="Type here..."
+            placeholder="Title..."
+            placeholderTextColor={"gray"}
+            style={{ fontSize: 46 }}
+            className="p-2 w-screen h-40 bg-gray-300"
+            onChangeText={(text) => setTitle(text)}
           />
-          <View className="w-full flex flex-row justify-center items-center gap-4">
+          <TextInput
+            className="p-2 w-full"
+            placeholder="Enter your blog description"
+            multiline={true}
+            onChangeText={(text) => setBody(text)}
+          />
+          <View className="absolute top-2 left-2 z-[999] flex gap-3 flex-row justify-center items-center">
             <TouchableOpacity
-              className="w-32 bg-green-600 h-10 flec justify-center items-center rounded-lg"
-              onPress={handleUplodeModal}
+              id="upload"
+              className="w-10 h-10 rounded-full flex justify-center items-center bg-black"
+              onPress={handleUploadPress}
             >
-              <Text style={styles.closeButtonText}>Upload</Text>
+              <Image
+                className="w-7 h-7"
+                source={require("../../assets/icons/upload.png")}
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
-              <Text style={styles.closeButtonText}>Close</Text>
+            <TouchableOpacity
+              className="w-10 h-10 rounded-full flex justify-center items-center bg-black"
+              onPress={handlePostSubmit}
+            >
+              <Image
+                className="w-7 h-7"
+                source={require("../../assets/icons/send1.png")}
+              />
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+
+        <Modal
+          animationType="slide"
+          visible={isModalVisible}
+          onRequestClose={handleCloseModal}
+          className="w-full h-screen flex justify-center"
+        >
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Enter Image URL</Text>
+            <TextInput
+              className="w-full h-14 border border-gray-400 m-2 p-2 rounded-2xl"
+              value={imageUrl}
+              onChangeText={handleInputChange}
+              placeholder="Type here..."
+            />
+            <View className="w-full flex flex-row justify-center items-center gap-4">
+              <TouchableOpacity
+                className="w-32 bg-green-600 h-10 flex justify-center items-center rounded-lg"
+                onPress={handleUplodeModal}
+              >
+                <Text style={styles.closeButtonText}>Upload</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCloseModal}
+              >
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
     </>
   );
 };
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "white",
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    marginBottom: 10,
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: "gray",
-    padding: 10,
-    marginBottom: 15,
-    borderRadius: 5,
-  },
-  closeButton: {
-    backgroundColor: "gray",
-    padding: 10,
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: "white",
-    textAlign: "center",
-  },
-});
+
 export default BlogPost;

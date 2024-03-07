@@ -1,12 +1,38 @@
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+import {
+  ApolloClient,
+  InMemoryCache,
+  HttpLink,
+  ApolloLink,
+  concat,
+} from "@apollo/client";
 
-const link = new HttpLink({ uri: 'http://localhost:3000/graphql' });
+const BASE_URL = "http://localhost:3001/graphql";
 
-const cache = new InMemoryCache();
+const httpLink = new HttpLink({
+  uri: BASE_URL,
+});
+
+const errorMiddleware = new ApolloLink((operation, forward) => {
+  return forward(operation).map((response) => {
+    if (response.errors) {
+      console.error("Network error:", response.errors);
+    }
+    return response;
+  });
+});
+
+const authMiddleware = new ApolloLink((operation, forward) => {
+  operation.setContext({
+    headers: {},
+  });
+  return forward(operation);
+});
+
+const link = concat(errorMiddleware, concat(authMiddleware, httpLink));
 
 const client = new ApolloClient({
-  link,
-  cache,
+  link: link,
+  cache: new InMemoryCache(),
 });
 
 export default client;
