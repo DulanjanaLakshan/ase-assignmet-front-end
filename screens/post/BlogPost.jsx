@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,10 +13,23 @@ import Navbar from "../../components/navbar/Navbar";
 import BackButton from "../../components/back/BackButton";
 import { useNavigation } from "@react-navigation/native";
 import { gql, useMutation } from "@apollo/client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CREATE_BLOG_POST = gql`
-  mutation CreateBlogPost($createBlogPostInput: BlogPostInput!) {
-    createBlogPost(createBlogPostInput: $createBlogPostInput) {
+  mutation MUTATE_DATA(
+    $title: String!
+    $body: String!
+    $image: String!
+    $author: String!
+  ) {
+    createBlogPost(
+      createBlogPostInput: {
+        title: $title
+        body: $body
+        image: $image
+        author: $author
+      }
+    ) {
       id
       title
       body
@@ -34,6 +47,40 @@ const BlogPost = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [author, setAuthor] = useState("");
+
+  const [
+    createBlogPost,
+    {
+      loading: createBlogLoading,
+      error: createBlogError,
+      data: createBlogData,
+    },
+  ] = useMutation(CREATE_BLOG_POST, {
+    variables: {
+      title: title,
+      body: body,
+      image: imageUrl,
+      author: author,
+    },
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("userData");
+        if (userData !== null) {
+          const userDataObject = JSON.parse(userData);
+          setAuthor(userDataObject.signIn.id);
+        }
+        navigation.navigate("Home");
+      } catch (error) {
+        console.error("Error retrieving user data from AsyncStorage:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleUploadPress = () => {
     setIsModalVisible(true);
@@ -52,11 +99,16 @@ const BlogPost = () => {
     setIsModalVisible(false);
   };
 
-  useEffect(() => {
-    if (!navigation) {
-      console.error("Navigation object not available in BlogPost component.");
+  const handlePostSubmit = async () => {
+    try {
+      const { data } = await createBlogPost();
+      navigation.navigate("Home");
+    } catch (error) {
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        const errors = error.graphQLErrors.map((error) => error.message);
+      }
     }
-  }, []);
+  };
 
   const styles = StyleSheet.create({
     scrollViewContainer: {
@@ -84,29 +136,6 @@ const BlogPost = () => {
       textAlign: "center",
     },
   });
-
-  const [createBlogPost, { loading, error }] = useMutation(CREATE_BLOG_POST);
-
-  const handlePostSubmit = async () => {
-    try {
-      const { data } = await createBlogPost({
-        variables: {
-          createBlogPostInput: {
-            title,
-            body,
-            image: imageUrl,
-            author: "assadsa",
-          },
-        },
-      });
-
-      console.log("Post created successfully:", data,"\n");
-      console.log("Post created successfully:", data.createBlogPost);
-    } catch (err) {
-      console.error("Error creating post:", err);
-    }
-  };
-
   return (
     <>
       <ScrollView contentContainerStyle={styles.scrollViewContainer}>

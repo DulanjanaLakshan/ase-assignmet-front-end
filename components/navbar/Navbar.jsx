@@ -1,8 +1,13 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 const Navbar = () => {
     const navigation = useNavigation();
+    const handleChange = async () => {
+      await AsyncStorage.clear();
+      navigation.navigate("Login")
+    }
   return (
     <View className="flex flex-row w-full justify-between items-center p-5 bg-black">
       <TouchableOpacity  onPress={() => navigation.navigate("BlogPost")}>
@@ -20,7 +25,7 @@ const Navbar = () => {
         />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+      <TouchableOpacity onPress={handleChange}>
         <Image
           className="w-7 h-7"
           source={require("../../assets/icons/user.png")}

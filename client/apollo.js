@@ -6,7 +6,8 @@ import {
   concat,
 } from "@apollo/client";
 
-const BASE_URL = "http://localhost:3001/graphql";
+const BASE_URL = "https://322d-45-121-91-7.ngrok-free.app/graphql";
+
 
 const httpLink = new HttpLink({
   uri: BASE_URL,

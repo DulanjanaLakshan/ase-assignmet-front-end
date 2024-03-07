@@ -27,10 +27,7 @@ const Home = () => {
     if (data) {
       setDetails(data.getAllBlogPost);
     }
-    console.log("is loading", loading);
-    console.log("is data", data);
-    console.log("is error", error);
-  }, []);
+  }, [data]);
 
   const styles = StyleSheet.create({
     scrollViewContainer: {
@@ -55,7 +52,7 @@ const Home = () => {
           )}
           {details.length > 0 &&
             details.map((item) => (
-              <Card
+                <Card
                 key={item.id}
                 id={item.id}
                 url={item.image}
