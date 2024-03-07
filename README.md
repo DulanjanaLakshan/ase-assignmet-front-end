@@ -17,4 +17,39 @@
 
 ## 📝 Notes
 
-- [`react-native-reanimated` docs](https://docs.swmansion.com/react-native-reanimated/)
+
+#### Login Page
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175253.png)
+
+#### SignUp Page
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175456.png)
+
+
+#### Home Page
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175546.png)
+
+
+#### Post Priviwe
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175559.png)
+
+#### Uplode Blog Post Image
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175721.png)
+
+
+#### Create Post
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175819.png)
+
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175932.png)
+
+#### Create Post Commet
+
+![Image Description](./assets/images/Screenshot%202024-03-07%20175942.png)
+
+

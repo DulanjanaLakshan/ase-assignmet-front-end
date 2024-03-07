@@ -72,9 +72,10 @@ const BlogPost = () => {
         if (userData !== null) {
           const userDataObject = JSON.parse(userData);
           setAuthor(userDataObject.signIn.id);
-          console.log(userDataObject.signIn.id);
+          if(userDataObject.signIn.id===null){
+            navigation.navigate("Home");
+          }
         }
-        navigation.navigate("Home");
       } catch (error) {
         console.error("Error retrieving user data from AsyncStorage:", error);
       }
